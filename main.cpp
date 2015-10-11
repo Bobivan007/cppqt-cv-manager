@@ -2,76 +2,83 @@
 #include <string>
 #include <array>
 #include <vector>
-
-// We should keep list of programmers CVs
-// For each CV we have
-//      * name field
-//      * birthday year
-//      * list of skills
-//      * list of previous jobs
-//      * we would like to print our CV
-
-class CV
+#include <algorithm>
+#include <iterator>
+using namespace std;
+class JobRecord
 {
 public:
-    CV(const std::string &name, int birthYear, const std::string &skills, const std::string &previousJobs) :
-        mName{name}
-      , mBirthYear{birthYear}
-      , mSkills{skills}
-      , mPreviousJobs{previousJobs}
+
+    JobRecord(int start_year, int end_year, const string &company_name, string qualification) :
+     mStartYear{start_year}, mLastYear{end_year}, mCompanyName{company_name}, mqualification{qualification}
+{
+
+}
+    int job_start () {return mStartYear; }
+    int job_end () {return mLastYear; }
+protected:
+    int mStartYear, mLastYear;
+    string mCompanyName, mqualification;
+};
+
+class CV: public JobRecord
+{
+public:
+    CV(const string &name, int birthYear, const string &skills,
+       int start_year, int end_year, const string &company_name, string qualification) :
+       JobRecord(start_year, end_year, company_name, qualification), mName{name}, mBirthYear{birthYear}, mSkills{skills}
     {
 
     }
 
-    bool isValid() const
+    bool isValid(vector<string> &vec) const
     {
-        return !mName.empty()
-                && ((mBirthYear > 1970) && (mBirthYear < 1995))
-                && !mSkills.empty()
-                && !mPreviousJobs.empty();
+    vector<string> :: iterator it = find(vec.begin(), vec.end(), mqualification);
+    if (it == vec.end() ) {cout << "Invalid qualification, choose one of the given: " << endl; return false; }
+     else return !mName.empty() && ((mBirthYear > 1970) && (mBirthYear < 1995))
+            && !mSkills.empty();!mCompanyName.empty() && ((mStartYear > 1960) && (mLastYear > 1960)); !mqualification.empty();
     }
-
     void print() const
     {
-        if (isValid())
-        {
-            std::cout << mName << " (" << mBirthYear << ")" << std::endl;
-            std::cout << "=====================" << std::endl;
-            std::cout << "Skills: " << mSkills << std::endl;
-            std::cout << "Previous work record: " << mPreviousJobs << std::endl;
-            std::cout << std::endl;
-        }
+            cout << mName << " (" << mBirthYear << ")" << endl;
+            cout << "=====================" << endl;
+            cout << "Skills: " << mSkills << endl;
+            cout << "Started working in " << mStartYear << " and finished in " << mLastYear << endl;
+            cout << "Company: " << mCompanyName << endl;
+            cout << "Worked as a: " << mqualification << endl;
+            cout << endl;
     }
 
 private:
-    std::string mName;
+    string mName;
     int mBirthYear;
-    std::string mSkills;
-    std::string mPreviousJobs;
+    string mSkills;
 };
-
 
 int main()
 {
-    CV johnsCV {"John Jonson", 1978,"C++, Java", "IBM 1990-1995; Microsoft 1996-2002"};
+    cout << "Write your data in this order: Full name, birth, skills, start working, end working, previous company, position" << endl;
+    cout << endl;
+    cout << "OH, and by the way, there are 3 optional positions: junior developer, developer, senior software developer" << endl;
+vector<string> qual_vec {"junior developer", "developer", "senior software developer"};
 
-    CV dansCV("Dan Davidson", 1988, "C++, Java", "IBM 1996-1997");
-
-//    std::array<CV, 3> cvList {johnsCV, dansCV, {"Will Walker", 197, "C++, Java", "IBM 1990-1999; Microsoft 1999-2010"} };
-    std::vector<CV> cvList {johnsCV, dansCV, {"Will Walker", 197, "C++, Java", "IBM 1990-1999; Microsoft 1999-2010"} };
-
-    for (const auto& cv: cvList)
+    CV johnsCV {"John Jonson", 1978,"C++, Java", 1994, 2000, "Global", "junior developer"};
+    CV dansCV("Dan Davidson", 1988, "C++, Java", 1994, 2000, "Global", "developer");
+    CV bohdanCV ("Bohdan Dmyrtyk", 1994, "C++, Objective-C", 2010, 2015, "Lviv POlitech", "junior developer");
+vector<CV> resume_list {johnsCV, dansCV, bohdanCV};
+for ( auto& cv: resume_list)
+{
+    int wbeg = cv.job_start();
+    int wend = cv.job_end();
+    int experience = wend - wbeg;
+    if (experience >=5 ) {
+    if (cv.isValid(qual_vec))
     {
-        if (cv.isValid())
-        {
-            cv.print();
-        }
-        else
-        {
-            std::cout << "ERROR: CV is invalid" << std::endl;
-        }
+        cv.print();
     }
-
+    else cout << "ERROR: CV is invalid" << endl;
+    }
+}
     return 0;
 }
 
