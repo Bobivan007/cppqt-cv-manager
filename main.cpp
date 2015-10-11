@@ -12,73 +12,98 @@ public:
     JobRecord(int start_year, int end_year, const string &company_name, string qualification) :
      mStartYear{start_year}, mLastYear{end_year}, mCompanyName{company_name}, mqualification{qualification}
 {
-
 }
-    int job_start () {return mStartYear; }
-    int job_end () {return mLastYear; }
+    int experience () { int exp = mLastYear - mStartYear; return exp; }
+    int job_start () const {return mStartYear; }
+    int job_end () const {return mLastYear; }
+    string get_comp() const {return mCompanyName; }
+    string get_qual() const {return mqualification; }
+    bool isValid() const
+    {
+     return !mCompanyName.empty() && ((mStartYear > 1960) && (mLastYear > 1960)) && !mqualification.empty();
+    }
 protected:
     int mStartYear, mLastYear;
     string mCompanyName, mqualification;
 };
 
-class CV: public JobRecord
+class CV
 {
 public:
-    CV(const string &name, int birthYear, const string &skills,
-       int start_year, int end_year, const string &company_name, string qualification) :
-       JobRecord(start_year, end_year, company_name, qualification), mName{name}, mBirthYear{birthYear}, mSkills{skills}
+    CV(const string &name, int birthYear, const string &skills) : mName{name}, mBirthYear{birthYear}, mSkills{skills}
     {
 
     }
 
-    bool isValid(vector<string> &vec) const
+    bool isValid() const
     {
-    vector<string> :: iterator it = find(vec.begin(), vec.end(), mqualification);
-    if (it == vec.end() ) {cout << "Invalid qualification, choose one of the given: " << endl; return false; }
-     else return !mName.empty() && ((mBirthYear > 1970) && (mBirthYear < 1995))
-            && !mSkills.empty();!mCompanyName.empty() && ((mStartYear > 1960) && (mLastYear > 1960)); !mqualification.empty();
+         return !mName.empty() && ((mBirthYear > 1970) && (mBirthYear < 1995)) && !mSkills.empty();
     }
+
     void print() const
     {
             cout << mName << " (" << mBirthYear << ")" << endl;
             cout << "=====================" << endl;
             cout << "Skills: " << mSkills << endl;
-            cout << "Started working in " << mStartYear << " and finished in " << mLastYear << endl;
-            cout << "Company: " << mCompanyName << endl;
-            cout << "Worked as a: " << mqualification << endl;
+            vector<JobRecord>::const_iterator it = mPreviousjob.begin();
+            for (; it != mPreviousjob.end(); ++it)
+            {
+                cout << "Began in " << it->job_start() << " and ended in " << it->job_end() << endl << "In company: "<< it->get_comp()
+                     << endl << "Worked as " << it->get_qual() << endl;
+            }
             cout << endl;
     }
+void addJobRecord (const JobRecord &obj)
+{
+    if (obj.isValid() )
+    {
+     mPreviousjob.push_back(obj);
+    }
+}
+int Total_experience ()
+{
+    int sum_exp {0};
+    vector<JobRecord>::iterator it = mPreviousjob.begin();
+   for (; it != mPreviousjob.end(); ++it)
+   {
+     sum_exp += it->experience();
+   }
+   return sum_exp;
+}
 
-private:
+int siz () const {return mPreviousjob.size(); }
+protected:
     string mName;
     int mBirthYear;
     string mSkills;
+    vector<JobRecord> mPreviousjob;
 };
+
 
 int main()
 {
-    cout << "Write your data in this order: Full name, birth, skills, start working, end working, previous company, position" << endl;
-    cout << endl;
-    cout << "OH, and by the way, there are 3 optional positions: junior developer, developer, senior software developer" << endl;
-vector<string> qual_vec {"junior developer", "developer", "senior software developer"};
+JobRecord jfirstj {1991, 2001, "Global", "junior developer"};
+JobRecord jsecondj {2001, 2002, "Global", "junior developer"};
+    CV johnsCV {"John Jonson", 1978,"C++, Java"};
+    if (jfirstj.isValid() && jsecondj.isValid())
+    { johnsCV.addJobRecord(jfirstj);
+      johnsCV.addJobRecord(jsecondj); }
 
-    CV johnsCV {"John Jonson", 1978,"C++, Java", 1994, 2000, "Global", "junior developer"};
-    CV dansCV("Dan Davidson", 1988, "C++, Java", 1994, 2000, "Global", "developer");
-    CV bohdanCV ("Bohdan Dmyrtyk", 1994, "C++, Objective-C", 2010, 2015, "Lviv POlitech", "junior developer");
-vector<CV> resume_list {johnsCV, dansCV, bohdanCV};
+JobRecord dfirstj {1994, 2000, "Global", "junior developer"};
+JobRecord dsecondj {1994, 2000, "Global", "junior developer"};
+    CV dansCV("Dan Davidson", 1988, "C++, Java");
+    if (dfirstj.isValid() && dsecondj.isValid())
+    { dansCV.addJobRecord(dfirstj);
+      dansCV.addJobRecord(dfirstj); }
+
+vector<CV> resume_list {johnsCV, dansCV};
+int min_exp {5};
 for ( auto& cv: resume_list)
 {
-    int wbeg = cv.job_start();
-    int wend = cv.job_end();
-    int experience = wend - wbeg;
-    if (experience >=5 ) {
-    if (cv.isValid(qual_vec))
-    {
+    int sum_ex = cv.Total_experience();
+    if (cv.isValid() && sum_ex >= min_exp)
         cv.print();
-    }
-    else cout << "ERROR: CV is invalid" << endl;
-    }
-}
+ }
     return 0;
 }
 
